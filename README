@@ -1,1 +1,39 @@
-Work in progress...
+=== Plugin Name ===
+Contributors: kieranmasterton
+Donate link: http://filmpress.org
+Tags: film, geocode, requests, demand, screening, marketing, movies
+Requires at least: 3.0
+Tested up to: 3.4.2
+Stable tag: 1.0
+License: GPLv2
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+
+NOTE: This is still in development and not ready for prime time!
+
+FilmPress Requests plugin enables film sites to collect geocoded requests to see a given film.
+
+== Description ==
+
+FilmPress Requests plugin enables film sites to collect geocoded requests to see a given film.
+
+== Installation ==
+
+1. Upload `plugin-name.php` to the `/wp-content/plugins/` directory
+2. Activate the plugin through the 'Plugins' menu in WordPress
+3. Done!
+
+== Frequently Asked Questions ==
+
+N/A
+
+== Screenshots ==
+
+N/A
+
+== Changelog ==
+
+N/A
+
+== Upgrade Notice ==
+
+N/A

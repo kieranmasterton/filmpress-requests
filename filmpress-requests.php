@@ -6,7 +6,7 @@ Description: FilmPress plugin that allows you to collect requests for screenings
 Version: 0.1
 Author: Kieran Masterton
 Author URI: http://kieranmasterton.com
-License: GPL2+
+License: GPLv2
 */
 
 class FilmPress_Requests {
