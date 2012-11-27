@@ -14,38 +14,42 @@ class FilmPress_Requests {
     // Run.
     function init() {
         add_action( 'admin_enqueue_scripts', array('FilmPress_Requests', 'admin_styles') );
-        add_action( 'admin_menu', array('FilmPress_Requests', 'register_submenu_page') );
+        add_action( 'admin_menu', array('FilmPress_Requests', 'register_submenu_pages') );
         
         
         FilmPress_Requests::register_requests_post_type();
         // Add filter to rewrite post titles
         add_filter( 'wp_insert_post_data' , array('FilmPress_Requests', 'rewrite_request_title') , '100', 2 );
+        // Add filter to hijack map page template
+        add_filter( 'the_content', array('FilmPress_Requests','map_page_content') );
         
         // Add action to set lat/long
         add_action('save_post', array('FilmPress_Requests','geocode'));  
+        
     }
     
     // Runs upon activation.
     static function plugin_activation(){
-    
+        FilmPress_Requests::create_map_page();
     }
     
     // Runs upon deactivation.
     function plugin_deactivation(){
-        
+        FilmPress_Requests::delete_map_page();
     }
     
-    function register_submenu_page(){
-        #add_submenu_page('', 'Requests Map', 'Requests Map', 'manage_options', 'requests-map');
-        add_submenu_page( 'edit.php?post_type=filmpress-request', 'Requests Map', 'Requests Map', 'manage_options', 'requests-map', array('FilmPress_Requests', 'submenu_page_callback') );
+    function register_submenu_pages(){
+        add_submenu_page( 'edit.php?post_type=filmpress-request', 'Requests Map', 'Requests Map', 'manage_options', 'requests-map', array('FilmPress_Requests', 'admin_submenu_map_page_callback') );
     }
     
-    function submenu_page_callback(){
+    // Request map admin page
+    function admin_submenu_map_page_callback(){
         echo '<h3>Requests Map</h3>';
-        
-        echo "
-
-        <script src=\"http://maps.google.com/maps/api/js?sensor=false\"></script>
+        return FilmPress_Requests::display_map();
+    }
+    
+    function display_map(){
+        echo "<script src=\"http://maps.google.com/maps/api/js?sensor=false\"></script>
         <script type=\"text/javascript\">
         
         var data = {\"requests\":[";
@@ -58,7 +62,7 @@ class FilmPress_Requests {
         
     	echo "]}
     	
-    	var script = '<script type=\"text/javascript\" src=\"/wp-content/plugins/filmpress-requests/markerclusterer';
+    	var script = '<script type=\"text/javascript\" src=\"/wp-content/plugins/filmpress-requests/js/markerclusterer';
           if (document.location.search.indexOf('compiled') !== -1) {
             script += '_compiled';
           }
@@ -91,7 +95,7 @@ class FilmPress_Requests {
           }
           google.maps.event.addDomListener(window, 'load', initialize);
         </script>
-        <div id=\"map-container\"><div id=\"map\"></div></div>
+        <div id=\"map-container\"><div id=\"map\" style=\"width: 600px;height: 400px;\"></div></div>
 
 ";
     }
@@ -430,6 +434,62 @@ class FilmPress_Requests {
            $data['post_title'] = $postarr['filmpress-request-email'];
 
            return $data;
+        }
+        
+        // Creates maps page.
+        function create_map_page(){
+            $args = array(
+              'name' => 'film-request-map',
+              'post_type' => 'page',
+              'post_status' => 'publish',
+              'showposts' => 1,
+              'caller_get_posts'=> 1
+            );
+            $post = get_posts($args);
+            
+            if( $post ) {
+                wp_delete_post($post[0]->ID, TRUE);
+            }
+
+            // Create post object
+            $map_page['post_title'] = 'Film Request Map';
+            $map_page['post_content'] = "Don't edit or delete this page. It is used by FilmPress Requests to display your film requests map.";
+            $map_page['post_status'] = 'publish';
+            $map_page['post_type'] = 'page';
+            $map_page['comment_status'] = 'closed';
+            $map_page['ping_status'] = 'closed';
+            $map_page['post_name'] = 'film-request-map';
+            $map_page['post_category'] = array(1); // the default 'Uncatrgorised'
+
+            // Insert the post into the database
+            $map_page_id = wp_insert_post( $map_page );
+
+        }
+        
+        // Delete maps page.
+        function delete_map_page(){
+            $args = array(
+              'name' => 'film-request-map',
+              'post_type' => 'page',
+              'post_status' => 'publish',
+              'showposts' => 1,
+              'caller_get_posts'=> 1
+            );
+            $post = get_posts($args);
+     
+            if( $post ) {
+                wp_delete_post($post[0]->ID, TRUE);
+            }
+        }
+        
+        // Function to hijack map page template.
+        function map_page_content( $the_content )
+        {
+ 
+            if ( is_page( 'film-request-map' ) ) {
+                $the_content = FilmPress_Requests::display_map();
+            }
+            return $the_content;
         }
     
 }
